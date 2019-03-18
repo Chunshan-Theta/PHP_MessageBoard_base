@@ -1,9 +1,9 @@
 <?php
 
 define('DB_PATH', '127.0.0.1'); //設定資料庫路徑
-define('DB_NAME', 'NAME'); //設定資料庫名稱
-define('DB_USER', 'USER'); //設定資料庫帳號
-define('DB_PASSWORD', 'PASSWORD'); //設定資料庫密碼
+define('DB_NAME', 'messageboard'); //設定資料庫名稱
+define('DB_USER', 'root'); //設定資料庫帳號
+define('DB_PASSWORD', 'root'); //設定資料庫密碼
 ///
 
 //建立PDO連線
