@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 	require('config.php');
 	$title=isset($_POST['title'])?$_POST['title']:null;
 	$auther=isset($_POST['auther'])?$_POST['auther']:null;
@@ -27,7 +27,10 @@
 			$query = $_link->prepare('INSERT INTO message_board(title,auther,content,posttime,roomTag)VALUE (:title,:auther,:content,CURRENT_TIMESTAMP,:roomTag)');
 			$query->execute($data);
 			$url = 'text.php?roomTag='.$roomTag;
+			
 			header("Location: $url");
+			
+			
 		break;
 		case 'del':
 		/*
@@ -79,7 +82,7 @@
 			*!!! * 是全部的意思 !!!			
 		*/
 			$data = array(':roomTag' => $roomTag);
-			$view = $_link->prepare('SELECT * FROM message_board WHERE roomTag=:roomTag');
+			$view = $_link->prepare('SELECT * FROM message_board WHERE roomTag=:roomTag ORDER by id DESC limit 1000');
 			$view->execute($data);
 			$result = $view->fetchAll(PDO::FETCH_OBJ);
 		
@@ -89,7 +92,7 @@
 <html>
 	<head>
 	<meta charset='utf-8'/>
-	<meta http-equiv="refresh" content="15">
+	<meta http-equiv="refresh" content="30">
 	<style>
 		.container{
 			margin: 10px;
@@ -123,6 +126,13 @@
     		text-align: center;
     		display: flex;
 		}
+		#emoji{
+			width: 65%;
+			margin-left: auto;
+    		margin-right: auto;
+    		text-align: center;
+    		display: flex;
+		}
 		body{
 			
 			width:100%;
@@ -145,11 +155,12 @@
 			
 			
 			<article>
-				<?php foreach($result as $v):?>
-					
+				<?php $count = 0;?>
+				<?php foreach(array_reverse($result) as $v):?>
+					<?php $count += 1;?>
 					<div class="container">
-						<p><?php echo $v->content; ?></p>
-						<h6><?php echo $v->auther; ?>     於<?php echo $v->posttime;?>發文</h6>
+						<div><h5 style="color: gray">📣<?php echo $count; ?></h5><p style="color: black"><?php echo $v->content; ?></p></div>
+						<h6><p style="color: deeppink">👨‍💻<?php echo $v->auther; ?>     </p>於<?php echo $v->posttime;?>發文</h6>
 						
 						<!--<input type='button' value='刪除' name='del' id='del' onclick="location.href='text.php?act=del&roomTag=<?php echo $roomTag; ?>&id=<?php echo $v->id; ?>'"/>
 						<input type='button' value='修改' name='upd' id='upd' onclick="location.href='text.php?act=upd&roomTag=<?php echo $roomTag; ?>&id=<?php echo $v->id; ?>'"/><br>-->
@@ -183,12 +194,14 @@
 		$('#auther').val($.cookie('auther'));
 		if($.cookie('auther')!=null){
 			$('#setNameBtn').hide();
+			$('#auther').attr("readonly","readonly");
 		}
 		function setname(){
 			var varAuther = $('#auther').val();
 			$.cookie('auther',varAuther);
 			console.log(varAuther);
 			console.log($.cookie('auther'));
+
 			$('#setNameBtn').hide();
 
 		}
@@ -214,7 +227,7 @@
 			$.cookie('content','null');
 	});
 	
-	$('article').scrollTop(9999);
+	$('article').scrollTop(9999999999999999999);//scroll to bottom
 	</script>
 	<script language="JavaScript">
 	if($.cookie('content')!='null'){
