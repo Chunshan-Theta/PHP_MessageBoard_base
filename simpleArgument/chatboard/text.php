@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 	require('config.php');
 	$title=isset($_POST['title'])?$_POST['title']:null;
 	$auther=isset($_POST['auther'])?$_POST['auther']:null;
@@ -79,7 +79,7 @@
 			*!!! * 是全部的意思 !!!			
 		*/
 			$data = array(':roomTag' => $roomTag);
-			$view = $_link->prepare('SELECT * FROM message_board WHERE roomTag=:roomTag');
+			$view = $_link->prepare('SELECT * FROM message_board WHERE roomTag=:roomTag ORDER by id DESC limit 5000');
 			$view->execute($data);
 			$result = $view->fetchAll(PDO::FETCH_OBJ);
 		
@@ -105,15 +105,16 @@
 			
 		}
 		.containerSub{
-			margin-left: 50px;
-			width: 85%;
+			margin-left: 10%;
+			margin-right: 3%;
+			width: auto;
 			border:3px solid lightgray;
 			
 		}
 		article{
 			min-height: 80%;
 			max-height: 100%;
-			width: 65%;
+			width: 100%;
 			overflow-y: scroll;
 			margin-left: inherit;
     		margin-right: inherit;
@@ -130,17 +131,32 @@
     		margin-right: inherit;
     		padding-top: 50px;
 		}
-		body{
+		#main{
 			display: -webkit-inline-box;
 			width:100%;
+			height: 95%;
+			overflow-x: hidden;
 		}
 		h6{
 			color:gray;
 			text-align: right;
 		}
+		header{
+			width: 100%;
+			height: 3%;
+			text-align: right;
+			border-bottom:1px solid #EEE;
+			margin-bottom: 10px;
+			vertical-align:middle;
+		}
+		#openBtn{
+			background-color: blue;
+			color: white;
+		}
 	</style>
 	</head>
 	<body>
+		<header><button id="openBtn" type="button" onclick="resetWriteWindow();openWriteWindow()">+ Post</button><br></header>
 		<?php if($act=='upd'):?><!--更新頁面-->	
 			<form method='POST' action='text.php?act=do_upd&id=<?php echo $id; ?>'>
 				<label for='title'>標題：</label><input type='text' name='title' id='title' placeholder='<?php echo $result_upd->title; ?>'/></br>
@@ -150,8 +166,8 @@
 			</form>		
 		<?php elseif($act!='do_upd'):?>
 			
-			
-			<article>
+			<div id="main">
+			<article id="board">
 				<?php foreach($result as $v):?>
 					<?php $pass = stripos($v->title,'##') ?>
 					<?php if(empty($pass)):?>
@@ -164,7 +180,9 @@
 							<!--<input type='button' value='刪除' name='del' id='del' onclick="location.href='text.php?act=del&roomTag=<?php echo $roomTag; ?>&id=<?php echo $v->id; ?>'"/>
 							<input type='button' value='修改' name='upd' id='upd' onclick="location.href='text.php?act=upd&roomTag=<?php echo $roomTag; ?>&id=<?php echo $v->id; ?>'"/>
 							-->
-							<button type="button" onclick="respondsPost('to ##<?php echo $v->id; ?>')">RE:</button><br>
+							<button type="button" onclick="openWriteWindow();respondsPost('to ##<?php echo $v->id; ?>')">RE:</button>
+							
+							<br>
 							
 							
 						</div>
@@ -173,8 +191,8 @@
 
 					<?php foreach($result as $sv):?>
 						<?php if(substr($sv->title,stripos($sv->title,'##')+2)==$v->id):?>
-							<div class="container containerSub">
-								<h1>👋RE:</h1>
+							<div class="container containerSub <?php echo $sv->id; ?>-sub">
+								<h3>👋RE:</h3>
 								<p><?php echo $sv->content; ?></p>
 								<h6><?php echo $sv->auther; ?>     於<?php echo $sv->posttime;?>發文<br>
 								#<?php echo $sv->id; ?></h6>
@@ -201,7 +219,7 @@
 				內容<br><textarea type ='text' name='content' id='content'></textarea></br>		
 				<input type='submit' value='送出' id='insert'/>
 			</form>
-			
+			</div>
 		<?php else: ?>
 			<?php echo "if條件錯誤"; ?>
 		<?php endif?>
@@ -213,6 +231,7 @@
 		$('#auther').val($.cookie('auther'));
 		if($.cookie('auther')!=null){
 			$('#setNameBtn').hide();
+			$('#auther').attr('readonly', true);
 		}
 		function setname(){
 			var varAuther = $('#auther').val();
@@ -220,31 +239,57 @@
 			console.log(varAuther);
 			console.log($.cookie('auther'));
 			$('#setNameBtn').hide();
-
+			$('#auther').attr('readonly', true);
 		}
 		$("#form1").submit(function(){
+			$("#insert").attr('disabled', true);
 			if ($("#content").val() == '') {
 				if(!confirm("content is empty!! Are you sure?")){
+					$("#insert").attr('disabled', false);
 					return false
 				};
 
 			}
 			if ($("#title").val() == '') {
 				if(!confirm("title is empty!! Are you sure?")){
+					$("#insert").attr('disabled', false);
 					return false
 				};
 
 			}
 			if ($("#auther").val() == '') {
 			    if(!confirm("auther is empty!! Are you sure?")){
+					$("#insert").attr('disabled', false);
 					return false
 				};
 
 			}
+
 	});
 		function respondsPost(titleText){
 			$('#title').val(titleText);
+			$('#title').attr('readonly', true);
 
+		}
+		function openWriteWindow(titleText){
+			var articleWidth = $('article').css("width").substring(0,$('article').css("width").length-2);
+			var bodyWidth70 = $('body').css("width").substring(0,$('body').css("width").length-2)*0.7;
+			console.log(articleWidth);
+			console.log(bodyWidth70);
+			if(articleWidth>bodyWidth70){
+				$('#board').css("width","65%");
+				$('#openBtn').html("close window");
+			}else{
+				$('#board').css("width","100%");
+				$('#openBtn').html("+ Post");
+			}
+			
+
+
+		}
+		function resetWriteWindow(){
+			$('#title').val("");
+			$('#title').attr('disabled', false);
 		}
 	</script>
 </html>
